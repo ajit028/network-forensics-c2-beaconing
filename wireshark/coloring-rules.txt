@@ -1,0 +1,11 @@
+# Wireshark Custom Coloring Rules for Threat Hunting
+# Format: @Name@Filter@[Foreground-RGB]@[Background-RGB]
+# Paste into Wireshark -> View -> Coloring Rules (or %APPDATA%/Wireshark/colorfilters)
+
+@C2 Beacon Traffic@http.request.uri contains "/s?="@ffff,ffff,ffff@ffff,0000,0000
+@Suspicious User-Agent@http.user_agent contains "python" || http.user_agent contains "curl"@0000,0000,0000@ffff,a5a5,0000
+@DNS Exfiltration Long Subdomain@dns.qry.name.len > 50@ffff,ffff,ffff@8000,0080
+@DNS TXT Record@dns.qry.type == 16@0000,0000,0000@0000,ffff,ffff
+@TLS Anomaly / Non-Standard Port@tls.record.content_type == 22 && !(tcp.dstport == 443 || tcp.dstport == 8443)@ffff,ffff,ffff@8b00,0000
+@Large Outbound TCP Packet@tcp.len > 1460@0000,0000,0000@90ee,90ee,90ee
+@ICMP Tunneling@icmp.type == 8 && frame.len > 150@ffff,ffff,ffff@4b00,8200
