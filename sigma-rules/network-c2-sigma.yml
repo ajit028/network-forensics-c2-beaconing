@@ -1,0 +1,57 @@
+title: Suspicious Periodic C2 Beaconing Activity
+id: c7b4e9f2-83a1-4b1e-92fd-e4b2d19f8a32
+status: experimental
+description: Detects consistent periodic network connection patterns characteristic of Command and Control (C2) beaconing over HTTP/HTTPS or raw TCP.
+author: Ajit Nayak (SOC Analyst / Threat Hunter)
+references:
+  - https://attack.mitre.org/tactics/TA0011/
+  - https://attack.mitre.org/techniques/T1071/
+date: 2026/09/19
+tags:
+  - attack.command_and_control
+  - attack.t1071
+logsource:
+  category: firewall
+  product: zeek
+  service: conn
+detection:
+  selection:
+    proto: tcp
+    duration|gte: 60
+    # High frequency short bursts or regular intervals indicative of beaconing
+    orig_bytes: 
+      - 100
+      - 500
+  condition: selection
+falsepositives:
+  - Authorized software heartbeat or telemetry check-ins
+  - System clock synchronization traffic
+level: high
+---
+title: Suspicious DNS Tunneling / C2 High Entropy Queries
+id: 38f9a2c1-4712-4d56-b98a-12e4f6a7b890
+status: experimental
+description: Detects unusually long DNS query names and high query frequency typical of DNS-based C2 exfiltration or beaconing.
+author: Ajit Nayak (SOC Analyst / Threat Hunter)
+references:
+  - https://attack.mitre.org/techniques/T1071/004/
+date: 2026/09/19
+tags:
+  - attack.command_and_control
+  - attack.t1071.004
+logsource:
+  category: dns
+  product: zeek
+  service: dns
+detection:
+  selection:
+    query|length: 50
+    qtype: 
+      - A
+      - TXT
+      - CNAME
+  condition: selection
+falsepositives:
+  - Content Delivery Networks (CDN) dynamic routing
+  - Legitimate encrypted DNS / DoH resolvers
+level: high

@@ -49,9 +49,11 @@ Modern adversaries utilize encrypted channels, custom application-layer protocol
 | Component | Path | Description |
 | :--- | :--- | :--- |
 | **Beacon Detector** | `scripts/beacon_detector.py` | Statistical analysis of packet inter-arrival times (IAT), jitter, and periodicity to flag C2 callbacks. |
+| **Advanced PCAP Parser** | `scripts/pcap_parser_advanced.py` | Automated extraction of TCP streams, HTTP headers, TLS SNI certificates, and DNS query stats. |
 | **DNS Exfil Detector** | `scripts/dns_exfil_detector.py` | Detects DNS tunneling and exfiltration via Shannon entropy, subdomain length, and high TXT query volume. |
 | **Snort Rules** | `ids-rules/snort-c2.rules` | 10+ hardened Snort IDS rules for HTTP beaconing, DNS exfil, and Cobalt Strike profiles. |
 | **Suricata Rules** | `ids-rules/suricata-c2.rules` | Equivalent Suricata rule set optimized for multi-threaded packet inspection. |
+| **Sigma Rules** | `sigma-rules/network-c2-sigma.yml` | Correlation rules linking firewall/DNS telemetry with C2 beaconing and tunneling patterns. |
 | **Wireshark Filters** | `wireshark/display-filters.md` | Curated display filter cheat sheet for rapid protocol and anomaly isolation. |
 | **Coloring Rules** | `wireshark/coloring-rules.txt` | Custom Wireshark packet coloring rules for instant visual threat triage. |
 | **Investigation Playbook**| `analysis/investigation-playbook.md`| Standard Operating Procedure (SOP) for step-by-step PCAP forensic analysis. |
@@ -72,7 +74,13 @@ Modern adversaries utilize encrypted channels, custom application-layer protocol
 
 ## 📦 Usage Examples
 
-### 1. Running Beacon Detection
+### 1. Running Advanced PCAP Parsing
+Extract TCP streams, HTTP headers, TLS handshakes, and DNS query statistics automatically from packet captures:
+```bash
+python3 scripts/pcap_parser_advanced.py capture.pcap
+```
+
+### 2. Running Beacon Detection
 Analyze network connection timing telemetry for periodic C2 beaconing signatures:
 ```bash
 python3 scripts/beacon_detector.py --input sample-data/sample-beacon-traffic.csv --threshold 0.85
