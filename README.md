@@ -12,12 +12,12 @@ A comprehensive, production-grade framework for detecting Command and Control (C
 
 ## 🚀 Project Overview
 
-Modern adversaries utilize encrypted channels, custom application-layer protocols, and low-and-slow beaconing intervals to blend with normal corporate web traffic and evade traditional signature-based detection. This repository provides a complete analytical toolkit—spanning automated statistical anomaly detection in Python, signature rules for Snort and Suricata, Wireshark threat-hunting cheat sheets, and a rigorous forensic investigation playbook.
+Modern adversaries utilize encrypted channels, custom application-layer protocols, and low-and-slow beaconing intervals to blend with normal corporate web traffic and evade traditional signature-based detection. This repository provides a complete analytical toolkit—spanning automated statistical anomaly detection in Python, automated Suricata rule generation, signature rules for Snort and Suricata, automated test suites, Wireshark threat-hunting cheat sheets, and a rigorous forensic investigation reporting framework.
 
 ### Architecture & Methodology
 
 ```
- [ Raw Network PCAP / Telemetry ]
+ [ Raw Network PCAP / Telemetry / IOCs ]
                │
                ├────────────────────────────────────────┐
                ▼                                        ▼
@@ -26,7 +26,8 @@ Modern adversaries utilize encrypted channels, custom application-layer protocol
    │                       │                │                       │
    │ • Beacon Analyzer     │                │ • Snort C2 Rules      │
    │ • Jitter & StdDev     │                │ • Suricata Signatures │
-   │ • DNS Entropy/Exfil   │                │ • Cobalt Strike ID    │
+   │ • DNS Entropy/Exfil   │                │ • Suricata Generator  │
+   │ • PCAP Stream Parser  │                │ • Cobalt Strike ID    │
    └──────────┬────────────┘                └──────────┬────────────┘
               │                                        │
               └───────────────────┬────────────────────┘
@@ -37,6 +38,7 @@ Modern adversaries utilize encrypted channels, custom application-layer protocol
                      │ • Display Filters       │
                      │ • Coloring Rules        │
                      │ • Step-by-Step Triage   │
+                     │ • Incident Report Skele │
                      └──────────┬──────────────┘
                                 ▼
                      [ Triage & SOC Alerting ]
@@ -51,12 +53,15 @@ Modern adversaries utilize encrypted channels, custom application-layer protocol
 | **Beacon Detector** | `scripts/beacon_detector.py` | Statistical analysis of packet inter-arrival times (IAT), jitter, and periodicity to flag C2 callbacks. |
 | **Advanced PCAP Parser** | `scripts/pcap_parser_advanced.py` | Automated extraction of TCP streams, HTTP headers, TLS SNI certificates, and DNS query stats. |
 | **DNS Exfil Detector** | `scripts/dns_exfil_detector.py` | Detects DNS tunneling and exfiltration via Shannon entropy, subdomain length, and high TXT query volume. |
+| **Suricata Rule Generator** | `scripts/suricata_rule_generator.py` | Automated generator transforming extracted threat IOCs or IP lists into high-fidelity Suricata rules. |
 | **Snort Rules** | `ids-rules/snort-c2.rules` | 10+ hardened Snort IDS rules for HTTP beaconing, DNS exfil, and Cobalt Strike profiles. |
 | **Suricata Rules** | `ids-rules/suricata-c2.rules` | Equivalent Suricata rule set optimized for multi-threaded packet inspection. |
 | **Sigma Rules** | `sigma-rules/network-c2-sigma.yml` | Correlation rules linking firewall/DNS telemetry with C2 beaconing and tunneling patterns. |
 | **Wireshark Filters** | `wireshark/display-filters.md` | Curated display filter cheat sheet for rapid protocol and anomaly isolation. |
 | **Coloring Rules** | `wireshark/coloring-rules.txt` | Custom Wireshark packet coloring rules for instant visual threat triage. |
 | **Investigation Playbook**| `analysis/investigation-playbook.md`| Standard Operating Procedure (SOP) for step-by-step PCAP forensic analysis. |
+| **Incident Report Template**| `reports/incident-report-template.md`| Standardized forensic incident reporting template for SOC tier-2/3 escalations. |
+| **Automated Tests** | `tests/test_pcap_parser.py` | Unit test suite validating entropy calculations, beacon detection, and rule generators. |
 | **Sample Data** | `sample-data/sample-beacon-traffic.csv`| Simulated telemetry dataset for testing beacon detection algorithms. |
 
 ---
@@ -86,15 +91,35 @@ Analyze network connection timing telemetry for periodic C2 beaconing signatures
 python3 scripts/beacon_detector.py --input sample-data/sample-beacon-traffic.csv --threshold 0.85
 ```
 
-### 2. Running DNS Exfiltration Analysis
+### 3. Running DNS Exfiltration Analysis
 Scan DNS query logs or PCAP exports for high-entropy subdomains and encoding anomalies:
 ```bash
 python3 scripts/dns_exfil_detector.py --domain a3FkOWpjYW5kc29pZGpjYXNvaWRjYXNvaWRjYXNvaWRjYXNvaWRjYQ.evil-c2.com
 ```
 
-### 3. Deploying Snort Rules
+### 4. Generating Custom Suricata Rules from IOCs
+Generate detection rules dynamically from threat intel feeds or extracted IP/domain IOCs:
 ```bash
+# Using CLI parameters
+python3 scripts/suricata_rule_generator.py --ioc 185.220.101.5:443 --output ids-rules/custom-c2.rules
+
+# From an IOC list file
+python3 scripts/suricata_rule_generator.py --iocs ioc_list.txt --output ids-rules/generated-suricata-c2.rules
+```
+
+### 5. Running Automated Validation Tests
+Verify that parsing engines, entropy metrics, and rule generators pass all quality checks:
+```bash
+python3 -m unittest discover tests
+```
+
+### 6. Deploying Snort & Suricata Rules
+```bash
+# Snort execution
 snort -A console -c /etc/snort/snort.conf -R ids-rules/snort-c2.rules -r sample-traffic.pcap
+
+# Suricata execution
+suricata -c /etc/suricata/suricata.yaml -s ids-rules/suricata-c2.rules -r sample-traffic.pcap
 ```
 
 ---
