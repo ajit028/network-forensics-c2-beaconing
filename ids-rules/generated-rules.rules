@@ -1,0 +1,2 @@
+# Generated Suricata Rules for C2 Detection
+alert http  any ->  any (msg:"SURICATA-C2 High Entropy Beaconing"; flow:established,to_server; content:"/beacon"; http_uri; sid:2000001; rev:1;)
